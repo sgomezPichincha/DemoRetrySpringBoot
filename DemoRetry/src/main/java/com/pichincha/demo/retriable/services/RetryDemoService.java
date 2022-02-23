@@ -2,6 +2,7 @@ package com.pichincha.demo.retriable.services;
 
 import com.pichincha.demo.retriable.dto.ResponseDto;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 
 /**
@@ -15,5 +16,8 @@ public interface RetryDemoService {
 
     @Retryable(value = {RuntimeException.class}, maxAttempts = MAX_ATTEMPTS, backoff = @Backoff(BACK_OFF))
     public ResponseDto getData(Long id);
+
+    @Recover
+    public ResponseDto retryExampleRecovery(RuntimeException e);
 
 }

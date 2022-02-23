@@ -43,18 +43,17 @@ public class RetryDemoServiceImpl implements RetryDemoService {
      * Método de recuperación que será llamado por Spring al agotar todos los intentos
      * tendrá que devolver lo mismo que el método original
      *
-     * @param t
-     * @param s
+     * @param e
      * @return
      */
-    @Recover
-    public ResponseDto retryExampleRecovery(RuntimeException t, String s) {
-        log.error("Retry Recovery - " + t.getMessage());
+    @Override
+    public ResponseDto retryExampleRecovery(RuntimeException e) {
+        log.error("Retry Recovery - " + e.getMessage());
         return ResponseDto
                 .builder()
                 .status(ErrorDto
                         .builder()
-                        .message(t.getMessage())
+                        .message(e.getMessage())
                         .code(HttpStatus.INTERNAL_SERVER_ERROR.toString())
                         .time(LocalDateTime.now())
                         .build())
