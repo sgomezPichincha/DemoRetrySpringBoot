@@ -33,9 +33,18 @@ public class RetryDemoServiceImpl implements RetryDemoService {
     @Override
     public ResponseDto getData(Long id) {
         log.info("Intentando consultar {}", LocalDateTime.now().getSecond());
-        ResponseEntity<ResponseDto> response = restTemplate.getForEntity(urlService, ResponseDto.class, id);
-        System.out.println(response.getStatusCode());
-        return response.getBody();
+        ResponseEntity<ResponseDto> response = null;
+        try {
+            response = restTemplate.getForEntity(urlService, ResponseDto.class, id);
+
+        } catch (Exception ex) {
+            throw new RetryDemoException("No es posible la comunicación con el servicio " + urlService);
+        } finally {
+            if (response != null)
+                log.info(response.getStatusCode().toString());
+        }
+
+        return response == null ? null : response.getBody();
     }
 
 
@@ -48,7 +57,7 @@ public class RetryDemoServiceImpl implements RetryDemoService {
      */
     @Override
     public ResponseDto retryExampleRecovery(RuntimeException e) {
-        log.error("Retry Recovery - " + e.getMessage());
+        log.error("Retry Recovery - {}", e.getLocalizedMessage());
         return ResponseDto
                 .builder()
                 .status(ErrorDto
