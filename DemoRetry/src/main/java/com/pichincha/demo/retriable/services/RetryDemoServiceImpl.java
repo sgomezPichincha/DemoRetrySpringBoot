@@ -5,6 +5,7 @@ import com.pichincha.demo.retriable.dto.ResponseDto;
 import com.pichincha.demo.retriable.exceptions.RetryDemoException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Recover;
@@ -36,15 +37,13 @@ public class RetryDemoServiceImpl implements RetryDemoService {
         ResponseEntity<ResponseDto> response = null;
         try {
             response = restTemplate.getForEntity(urlService, ResponseDto.class, id);
-
         } catch (Exception ex) {
             throw new RetryDemoException("No es posible la comunicación con el servicio " + urlService);
         } finally {
             if (response != null)
-                log.info(response.getStatusCode().toString());
+                log.info("Status {}", response.getStatusCode().toString());
         }
-
-        return response == null ? null : response.getBody();
+        return response.getBody();
     }
 
 
