@@ -5,6 +5,9 @@ import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.listener.RetryListenerSupport;
 
+/**
+ * Listener personalizado
+ */
 @Slf4j
 public class ApiRetryListener extends RetryListenerSupport {
 

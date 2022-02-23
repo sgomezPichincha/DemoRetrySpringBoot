@@ -7,6 +7,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 
+/**
+ * Configuración de un objeto de tipo RestTemplate
+ */
 @Configuration
 public class RestTemplateConfig {
     @Bean

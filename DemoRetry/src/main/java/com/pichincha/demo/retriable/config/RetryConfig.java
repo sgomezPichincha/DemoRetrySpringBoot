@@ -1,11 +1,13 @@
 package com.pichincha.demo.retriable.config;
 
-import com.pichincha.demo.retriable.exceptions.RetryDemoException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.support.RetryTemplate;
 
+/**
+ * Configuración de un objeto de tipo RetryTemplate
+ */
 @Configuration
 @Slf4j
 public class RetryConfig {
@@ -18,7 +20,7 @@ public class RetryConfig {
                 .maxAttempts(MAX_ATTEMPTS)
                 .fixedBackoff(BACK_OFF)
                 .retryOn(RuntimeException.class)
-                .withListener(new ApiRetryListener())
+                .withListener(new ApiRetryListener()) //listener personalizado
                 .build();
     }
 

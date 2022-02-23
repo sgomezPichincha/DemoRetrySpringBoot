@@ -2,7 +2,6 @@ package com.pichincha.demo.retriable.controllers;
 
 import com.pichincha.demo.retriable.dto.ResponseDto;
 import com.pichincha.demo.retriable.services.RetryDemoService;
-import com.pichincha.demo.retriable.services.RetryDemoTemplateService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/retry/annotation")
 @AllArgsConstructor
 public class RetryWhitAnnotationController {
+
     private RetryDemoService service;
 
     @GetMapping(value = "/persona/{id}")
