@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
+
 @RestController
 @RequestMapping("/api/persona")
 public class ClientDemoController {
@@ -24,8 +26,27 @@ public class ClientDemoController {
         int random = (int) (Math.random() * 100);
 
         System.out.println(random);
-        if (random > 50) {
+        if (random > 40) {
             throw new ServiceFiledException("ERROR AL CONSULTAR LA PERSONA");
+        }
+        PersonDto person = service.getData(id);
+        if (person == null) {
+            person = PersonDto.builder().status(ResponseMessage.builder()
+                    .code(HttpStatus.NOT_FOUND.toString())
+                    .message("No se encontró persona con id " + id)
+                    .build()).build();
+        }
+        return ResponseEntity.status(status).body(person);
+    }
+
+
+    @GetMapping(value = "/{time}/{id}")
+    public ResponseEntity<PersonDto> getPersonTimeOut(@PathVariable Long time, @PathVariable Long id) {
+        HttpStatus status = HttpStatus.OK;
+        try {
+            Thread.sleep(Duration.ofSeconds(time * 1000).getSeconds());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         PersonDto person = service.getData(id);
         if (person == null) {

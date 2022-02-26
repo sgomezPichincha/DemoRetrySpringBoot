@@ -4,6 +4,8 @@ import com.nantaaditya.circuitbreaker.model.Response;
 import com.nantaaditya.circuitbreaker.model.ResponseDto;
 import com.nantaaditya.circuitbreaker.services.ClientDemoService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 /**
  * @see //github.com/nantaaditya/circuit-breaker-example
@@ -41,18 +48,56 @@ public class ExampleController {
                 .build();
     }
 
+    @GetMapping(
+            value = "/data/{id}/{time}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @CircuitBreaker(name = RESILIENCE4J_INSTANCE_NAME, fallbackMethod = "fallbackCustomT")
+    @TimeLimiter(name = RESILIENCE4J_INSTANCE_NAME, fallbackMethod = "fallbackCustomT")
+    public Mono<Response<ResponseDto>> timeOutCustom(@PathVariable Long id, @PathVariable Long time) {
+        long inicio = System.currentTimeMillis();
+        CompletableFuture.completedFuture(service.getDataFromExternalService(id, time));
+        ResponseDto res = service.getDataFromExternalService(id, time);
+        long fin = System.currentTimeMillis();
+        System.out.println(">>>>" + ((int) (fin - inicio) / 1000));
+
+        return Mono.just(toOkResponse(res))
+                .delayElement(Duration.ofSeconds(time));
+    }
+
     public Response fallbackCustom(Exception ex) {
         log.info("Esto es un error fallback custom {}", ex.getMessage());
 
-        return toResponse(HttpStatus.INTERNAL_SERVER_ERROR, Boolean.FALSE);
+        return toResponse(HttpStatus.INTERNAL_SERVER_ERROR, new ResponseDto());
 
     }
 
-    private Response<Boolean> toResponse(HttpStatus httpStatus, Boolean result) {
-        return Response.<Boolean>builder()
+    public Mono<Response<ResponseDto>> fallbackCustomT(Exception ex) {
+        log.info("Esto es un error fallback custom {}", ex.getMessage());
+
+        return Mono.just(toResponse(HttpStatus.INTERNAL_SERVER_ERROR, new ResponseDto()))
+                .doOnNext(result -> log.warn("fallback executed"));
+
+    }
+
+//    private Mono<Response<ResponseDto>> toOkResponse(boolean valid) {
+//        if (!valid) {
+//            return Mono.just(toOkResponse());
+//        }
+//        return Mono.error(new RuntimeException("Runtime exception"));
+//    }
+
+    private Response<ResponseDto> toOkResponse(ResponseDto dto) {
+        return toResponse(HttpStatus.OK, dto);
+    }
+
+    private Response<ResponseDto> toResponse(HttpStatus httpStatus, ResponseDto result) {
+        return Response.<ResponseDto>builder()
                 .code(httpStatus.value())
                 .status(httpStatus.getReasonPhrase())
                 .data(result)
                 .build();
     }
+
+
 }

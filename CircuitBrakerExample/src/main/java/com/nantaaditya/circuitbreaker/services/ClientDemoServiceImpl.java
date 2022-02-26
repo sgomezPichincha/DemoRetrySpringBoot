@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ClientDemoServiceImpl implements ClientDemoService{
+public class ClientDemoServiceImpl implements ClientDemoService {
     private final RestTemplate restTemplate;
 
     @Override
@@ -19,6 +19,17 @@ public class ClientDemoServiceImpl implements ClientDemoService{
 
         final String URL = "http://localhost:8088/api/persona/{id}";
         ResponseEntity<ResponseDto> response = restTemplate.getForEntity(URL, ResponseDto.class, id);
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        }
+        return null;
+    }
+
+    @Override
+    public ResponseDto getDataFromExternalService(Long id, Long time) {
+
+        final String URL = "http://localhost:8088/api/persona/{time}/{id}";
+        ResponseEntity<ResponseDto> response = restTemplate.getForEntity(URL, ResponseDto.class, time, id);
         if (response.getStatusCode() == HttpStatus.OK) {
             return response.getBody();
         }
