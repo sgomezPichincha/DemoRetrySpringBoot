@@ -54,15 +54,9 @@ public class ExampleController {
     )
     @CircuitBreaker(name = RESILIENCE4J_INSTANCE_NAME, fallbackMethod = "fallbackCustomT")
     @TimeLimiter(name = RESILIENCE4J_INSTANCE_NAME, fallbackMethod = "fallbackCustomT")
-    public Mono<Response<ResponseDto>> timeOutCustom(@PathVariable Long id, @PathVariable Long time) {
-        long inicio = System.currentTimeMillis();
-        CompletableFuture.completedFuture(service.getDataFromExternalService(id, time));
-        ResponseDto res = service.getDataFromExternalService(id, time);
-        long fin = System.currentTimeMillis();
-        System.out.println(">>>>" + ((int) (fin - inicio) / 1000));
-
-        return Mono.just(toOkResponse(res))
-                .delayElement(Duration.ofSeconds(time));
+    public CompletableFuture<Response<ResponseDto>> timeOutCustom(@PathVariable Long id, @PathVariable Long time) {
+        return CompletableFuture.supplyAsync(() ->
+                toResponse(HttpStatus.OK, service.getDataFromExternalService(id, time)));
     }
 
     public Response fallbackCustom(Exception ex) {
@@ -72,11 +66,11 @@ public class ExampleController {
 
     }
 
-    public Mono<Response<ResponseDto>> fallbackCustomT(Exception ex) {
+    public CompletableFuture<Response<ResponseDto>> fallbackCustomT(Exception ex) {
         log.info("Esto es un error fallback custom {}", ex.getMessage());
 
-        return Mono.just(toResponse(HttpStatus.INTERNAL_SERVER_ERROR, new ResponseDto()))
-                .doOnNext(result -> log.warn("fallback executed"));
+        return CompletableFuture.completedFuture(toResponse(HttpStatus.INTERNAL_SERVER_ERROR, new ResponseDto()));
+
 
     }
 
