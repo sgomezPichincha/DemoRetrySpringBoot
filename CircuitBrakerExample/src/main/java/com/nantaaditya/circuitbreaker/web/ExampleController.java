@@ -54,6 +54,7 @@ public class ExampleController {
 
         log.info("Intentando consultar {} ", ++count);
         ResponseDto response = service.getDataFromExternalService(id);
+        count = 0;
         return Response.builder()
                 .code(HttpStatus.OK.value())
                 .status(HttpStatus.OK.getReasonPhrase())
