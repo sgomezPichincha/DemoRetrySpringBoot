@@ -35,4 +35,15 @@ public class ClientDemoServiceImpl implements ClientDemoService {
         }
         return null;
     }
+
+    @Override
+    public ResponseDto getDataFromExternalService(Long id, String error) {
+
+        final String URL = "http://localhost:8088/api/persona/error/{1}/{2}";
+        ResponseEntity<ResponseDto> response = restTemplate.getForEntity(URL, ResponseDto.class, error, id);
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        }
+        return null;
+    }
 }

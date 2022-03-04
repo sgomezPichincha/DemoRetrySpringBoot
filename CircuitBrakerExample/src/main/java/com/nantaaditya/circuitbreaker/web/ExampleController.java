@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -21,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
  * @see //github.com/nantaaditya/circuit-breaker-example
  */
 @RestController
-@RequestMapping("/example/")
+@RequestMapping("/example")
 @Slf4j
 @RequiredArgsConstructor
 public class ExampleController {
@@ -36,8 +33,8 @@ public class ExampleController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @CircuitBreaker(name = RESILIENCE4J_INSTANCE_NAME, fallbackMethod = FALLBACK_METHOD)
-    public Response errorCustom(@PathVariable Long id) throws Exception {
-        ResponseDto response = service.getDataFromExternalService(id);
+    public Response errorCustom(@PathVariable Long id, @RequestParam(value = "error", defaultValue = "no") String error) throws Exception {
+        ResponseDto response = service.getDataFromExternalService(id, error);
         return Response.builder()
                 .code(HttpStatus.OK.value())
                 .status(HttpStatus.OK.getReasonPhrase())
@@ -53,7 +50,7 @@ public class ExampleController {
     )
     @CircuitBreaker(name = RESILIENCE4J_INSTANCE_NAME)
     @Retry(name = RESILIENCE4J_INSTANCE_NAME, fallbackMethod = FALLBACK_METHOD)
-    public Response errorCustomRetry(@PathVariable Long id) throws Exception {
+    public Response errorCustomRetry(@PathVariable Long id) /*throws Exception*/ {
 
         log.info("Intentando consultar {} ", ++count);
         ResponseDto response = service.getDataFromExternalService(id);
@@ -61,6 +58,7 @@ public class ExampleController {
                 .code(HttpStatus.OK.value())
                 .status(HttpStatus.OK.getReasonPhrase())
                 .data(response)
+
                 .build();
     }
 
@@ -70,12 +68,12 @@ public class ExampleController {
     )
     @CircuitBreaker(name = RESILIENCE4J_INSTANCE_NAME, fallbackMethod = "fallbackCustomT")
     @TimeLimiter(name = RESILIENCE4J_INSTANCE_NAME, fallbackMethod = "fallbackCustomT")
-    public CompletableFuture<Response<ResponseDto>> timeOutCustom(@PathVariable Long id, @PathVariable Long time) throws Exception{
+    public CompletableFuture<Response<ResponseDto>> timeOutCustom(@PathVariable Long id, @PathVariable Long time) /*throws Exception */ {
         return CompletableFuture.supplyAsync(() ->
                 toResponse(HttpStatus.OK, service.getDataFromExternalService(id, time)));
     }
 
-    public Response fallbackCustom(Exception ex) {
+    public Response<ResponseDto> fallbackCustom(Exception ex) {
         count = 0;
         log.info("Esto es un error fallback custom {}", ex.getMessage());
         return toResponse(HttpStatus.INTERNAL_SERVER_ERROR, new ResponseDto());
@@ -83,7 +81,6 @@ public class ExampleController {
 
     public CompletableFuture<Response<ResponseDto>> fallbackCustomT(Exception ex) {
         log.info("Esto es un error fallback para el timeout {}", ex.getMessage());
-        log.error("Error", ex);
         return CompletableFuture.completedFuture(toResponse(HttpStatus.INTERNAL_SERVER_ERROR, new ResponseDto()));
     }
 

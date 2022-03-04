@@ -27,12 +27,6 @@ public class Resilience4jController {
     private static final String RESILIENCE4J_INSTANCE_NAME = "example";
     private static final String FALLBACK_METHOD = "fallback";
 
-    /**
-     * en el properties está definido 2 seg de timeout pasado eso lanza el fallback
-     *
-     * @param timeout
-     * @return
-     */
 
     @GetMapping(
             value = "/timeout/{timeout}",
