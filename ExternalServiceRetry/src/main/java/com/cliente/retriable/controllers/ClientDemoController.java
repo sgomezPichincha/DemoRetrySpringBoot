@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Random;
 
@@ -25,9 +24,7 @@ public class ClientDemoController {
     @GetMapping(value = "/{id}")
     public ResponseEntity<PersonDto> getPerson(@PathVariable("id") Long id) {
         HttpStatus status = HttpStatus.OK;
-        int random = (int) (Math.random() * 100);
-
-        System.out.println(random);
+        int random = new Random().nextInt(100);
         if (random > 50) {
             throw new ServiceFiledException("ERROR AL CONSULTAR LA PERSONA");
         }

@@ -3,6 +3,7 @@ package com.pichincha.demo.retriable.services;
 import com.pichincha.demo.retriable.dto.ErrorDto;
 import com.pichincha.demo.retriable.dto.ResponseDto;
 import com.pichincha.demo.retriable.exceptions.RetryDemoException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -18,20 +19,19 @@ import java.time.LocalDateTime;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class RetryDemoServiceImpl implements RetryDemoService {
 
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     @Value("${service.demo}")
     private String urlService;
 
-    public RetryDemoServiceImpl(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+    private int attemps = 0;
 
     @Override
     public ResponseDto getData(Long id) {
-        log.info("Intentando consultar {}", LocalDateTime.now().getSecond());
+        log.info("Intentando consultar {}", ++attemps);
         ResponseEntity<ResponseDto> response = null;
         try {
             response = restTemplate.getForEntity(urlService, ResponseDto.class, id);
@@ -41,6 +41,7 @@ public class RetryDemoServiceImpl implements RetryDemoService {
             if (response != null)
                 log.info("Status {}", response.getStatusCode().toString());
         }
+        attemps = 0;
         return response.getBody();
     }
 

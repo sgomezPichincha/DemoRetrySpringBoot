@@ -12,7 +12,7 @@ import org.springframework.retry.annotation.Retryable;
  */
 public interface RetryDemoService {
 
-    final int MAX_ATTEMPTS = 4; //intentos máximos
+    final int MAX_ATTEMPTS = 3; //intentos máximos
     final int BACK_OFF = 1000; //intervalo de tiempo para el reintento (milisegundos)
 
     @Retryable(value = {RetryDemoException.class}, maxAttempts = MAX_ATTEMPTS, backoff = @Backoff(BACK_OFF))
